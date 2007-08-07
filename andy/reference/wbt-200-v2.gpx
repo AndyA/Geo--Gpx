@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx
+ version="1.0"
+creator="GPSBabel - http://www.gpsbabel.org"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xmlns="http://www.topografix.com/GPX/1/0"
+xsi:schemaLocation="http://www.topografix.com/GPX/1/0 http://www.topografix.com/GPX/1/0/gpx.xsd">
+<bounds minlat="41.763376100" minlon ="-88.015743200" maxlat="41.765722100" maxlon="-88.008334800" />
+<trk>
+<trkseg>
+<trkpt lat="41.763376100" lon="-88.015706700">
+  <ele>234.900000</ele>
+  <course>337.024628</course>
+  <speed>5.126628</speed>
+  <name>WP0001</name>
+</trkpt>
+<trkpt lat="41.763432600" lon="-88.015719000">
+  <ele>234.500000</ele>
+  <course>350.776703</course>
+  <speed>6.371933</speed>
+  <name>WP0002</name>
+</trkpt>
+<trkpt lat="41.765428700" lon="-88.015743200">
+  <ele>234.800000</ele>
+  <course>359.481903</course>
+  <speed>8.546689</speed>
+  <name>WP0003</name>
+</trkpt>
+<trkpt lat="41.765576000" lon="-88.015702200">
+  <ele>236.300000</ele>
+  <course>11.728554</course>
+  <speed>4.186753</speed>
+  <name>WP0004</name>
+</trkpt>
+<trkpt lat="41.765593200" lon="-88.015658200">
+  <ele>235.900000</ele>
+  <course>62.341232</course>
+  <speed>4.124680</speed>
+  <name>WP0005</name>
+</trkpt>
+<trkpt lat="41.765604500" lon="-88.015593000">
+  <ele>235.800000</ele>
+  <course>76.918777</course>
+  <speed>5.557815</speed>
+  <name>WP0006</name>
+</trkpt>
+<trkpt lat="41.765608200" lon="-88.015320100">
+  <ele>234.900000</ele>
+  <course>88.958534</course>
+  <speed>7.554259</speed>
+  <name>WP0007</name>
+</trkpt>
+<trkpt lat="41.765722100" lon="-88.008421100">
+  <ele>232.200000</ele>
+  <course>88.729691</course>
+  <speed>9.392909</speed>
+  <name>WP0008</name>
+</trkpt>
+<trkpt lat="41.765695300" lon="-88.008376700">
+  <ele>232.000000</ele>
+  <course>128.981705</course>
+  <speed>4.742478</speed>
+  <name>WP0009</name>
+</trkpt>
+<trkpt lat="41.765625200" lon="-88.008334800">
+  <ele>232.000000</ele>
+  <course>155.971588</course>
+  <speed>4.271938</speed>
+  <name>WP0010</name>
+</trkpt>
+</trkseg>
+</trk>
+</gpx>
