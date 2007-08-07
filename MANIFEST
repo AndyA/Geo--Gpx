@@ -1,0 +1,13 @@
+Changes
+doc/gpx-1.0.xsd
+lib/Geo/Gpx.pm
+Makefile.PL
+MANIFEST
+README
+t/00.load.t
+t/01.iter.t
+t/02.cmp_ver.t
+t/03.gen-parse.t
+t/04.legacy.t
+t/pod-coverage.t
+t/pod.t

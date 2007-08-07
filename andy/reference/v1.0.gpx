@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<gpx xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.0" creator="Geo::Gpx" xsi:schemaLocation="http://www.topografix.com/GPX/1/0 http://www.topografix.com/GPX/1/0/gpx.xsd" xmlns="http://www.topografix.com/GPX/1/0">
+  <name>Test</name>
+  <desc>Test data</desc>
+  <author>Andy Armstrong</author>
+  <email>andy@hexten.net</email>
+  <time>2006-11-24T23:59:59Z</time>
+  <keywords>this, that, the other</keywords>
+  <copyright>(c) Anyone</copyright>
+  <url>http://www.topografix.com/GPX</url>
+  <urlname>GPX Spec</urlname>
+  <bounds maxlat="55.4451622411372" maxlon="-2.344214" minlat="-38.870059" minlon="-151.21003" />
+  <rte>
+    <name>Route 1</name>
+    <rtept lat="54.3286193447719" lon="-2.38972155527137">
+      <name>WPT1</name>
+    </rtept>
+    <rtept lat="54.6634365629388" lon="-2.55373552512617">
+      <name>WPT2</name>
+    </rtept>
+    <rtept lat="54.7289259665049" lon="-3.05196861273443">
+      <name>WPT3</name>
+    </rtept>
+  </rte>
+  <rte>
+    <name>Route 2</name>
+    <rtept lat="54.4165154835049" lon="-2.56153453279676">
+      <name>WPT4</name>
+    </rtept>
+    <rtept lat="54.6670126167344" lon="-2.69526089464403">
+      <name>WPT5</name>
+    </rtept>
+  </rte>
+  <trk>
+    <name>Track 1</name>
+    <trkseg>
+      <trkpt lat="54.5182217145253" lon="-2.62191579018834">
+      </trkpt>
+      <trkpt lat="54.1507759448355" lon="-3.05774931478646">
+      </trkpt>
+      <trkpt lat="54.6016296784874" lon="-3.40418920968631">
+      </trkpt>
+    </trkseg>
+    <trkseg>
+      <trkpt lat="54.6862790450185" lon="-3.68760108982739">
+      </trkpt>
+    </trkseg>
+  </trk>
+  <trk>
+    <name>Track 2</name>
+    <trkseg>
+      <trkpt lat="54.9927807628549" lon="-4.04712811256436">
+      </trkpt>
+      <trkpt lat="55.1148395198045" lon="-4.33623533555793">
+      </trkpt>
+      <trkpt lat="54.6214174046189" lon="-4.26293674042878">
+      </trkpt>
+      <trkpt lat="55.0540816059084" lon="-4.42261020671926">
+      </trkpt>
+      <trkpt lat="55.4451622411372" lon="-4.32873765338">
+      </trkpt>
+    </trkseg>
+  </trk>
+  <wpt lat="54.786989" lon="-2.344214">
+    <ageofdgpsdata>45</ageofdgpsdata>
+    <cmt>Where I live</cmt>
+    <desc>&#x3C;&#x3C;Chez moi&#x3E;&#x3E;</desc>
+    <dgpsid>247</dgpsid>
+    <ele>512</ele>
+    <fix>dgps</fix>
+    <geoidheight>0</geoidheight>
+    <hdop>10</hdop>
+    <url>http://hexten.net/</url>
+    <urlname>Hexten</urlname>
+    <magvar>0</magvar>
+    <name>My house &#x26; home</name>
+    <pdop>10</pdop>
+    <sat>3</sat>
+    <src>Testing</src>
+    <sym>pin</sym>
+    <time>2006-11-24T23:59:59Z</time>
+    <type>unknown</type>
+    <vdop>10</vdop>
+  </wpt>
+  <wpt lat="-38.870059" lon="-151.21003">
+    <name>Sydney, AU</name>
+  </wpt>
+</gpx>
