@@ -11,7 +11,7 @@ use Date::Format;
 use Scalar::Util qw(blessed);
 
 use vars qw ($VERSION);
-$VERSION = 0.20;
+$VERSION = '0.20';
 
 # Values that are encoded as attributes
 my %AS_ATTR = (
