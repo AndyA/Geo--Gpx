@@ -10,5 +10,6 @@ t/02.cmp_ver.t
 t/03.gen-parse.t
 t/04.legacy.t
 t/05.misc.t
+t/06.key-order.t
 t/pod-coverage.t
 t/pod.t

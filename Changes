@@ -24,3 +24,6 @@ Revision history for Geo-Gpx
 0.18    2007-08-07
         Replaced AUTOLOAD with generated accessors.
         Added bd foy's suggested add_waypoint method.
+
+0.19    2007-10-11
+        Fixed wpt element ordering per #29909

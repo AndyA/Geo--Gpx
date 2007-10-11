@@ -11,7 +11,7 @@ use Date::Format;
 use Scalar::Util qw(blessed);
 
 use vars qw ($VERSION);
-$VERSION = 0.18;
+$VERSION = 0.19;
 
 # Values that are encoded as attributes
 my %AS_ATTR = (
@@ -20,6 +20,15 @@ my %AS_ATTR = (
     trkpt => qr{^lat|lon$},
     email => qr{^id|domain$},
     link  => qr{^href$}
+);
+
+my %KEY_ORDER = (
+    wpt => [
+        qw(
+          ele time magvar geoidheight name cmt desc src link sym type fix
+          sat hdop vdop pdop ageofdgpsdata dgpsid extensions
+          )
+    ],
 );
 
 # Map hash keys to GPX names
@@ -468,12 +477,16 @@ sub _xml {
         my @cont    = ( "\n" );
         my $as_attr = $AS_ATTR{$name};
 
-        for my $k ( sort keys %{$value} ) {
-            if ( defined $as_attr && $k =~ $as_attr ) {
-                $attr->{$k} = $value->{$k};
-            }
-            else {
-                push @cont, $self->_xml( $k, $value->{$k}, $name_map );
+        # Shallow copy so we can delete keys as we output them
+        my %v = %{$value};
+        for my $k ( @{ $KEY_ORDER{$name} || [] }, sort keys %v ) {
+            if ( defined( my $vv = delete $v{$k} ) ) {
+                if ( defined $as_attr && $k =~ $as_attr ) {
+                    $attr->{$k} = $vv;
+                }
+                else {
+                    push @cont, $self->_xml( $k, $vv, $name_map );
+                }
             }
         }
 
@@ -645,7 +658,7 @@ Geo::Gpx - Create and parse GPX files.
 
 =head1 VERSION
 
-This document describes Geo::Gpx version 0.18
+This document describes Geo::Gpx version 0.19
 
 =head1 SYNOPSIS
 
