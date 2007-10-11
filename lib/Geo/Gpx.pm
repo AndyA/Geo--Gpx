@@ -11,7 +11,7 @@ use Date::Format;
 use Scalar::Util qw(blessed);
 
 use vars qw ($VERSION);
-$VERSION = 0.201;
+$VERSION = '0.20';
 
 # Values that are encoded as attributes
 my %AS_ATTR = (
@@ -658,7 +658,7 @@ Geo::Gpx - Create and parse GPX files.
 
 =head1 VERSION
 
-This document describes Geo::Gpx version 0.201
+This document describes Geo::Gpx version 0.20
 
 =head1 SYNOPSIS
 
