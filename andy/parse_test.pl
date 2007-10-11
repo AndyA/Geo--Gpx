@@ -28,7 +28,7 @@ while (my $obj = shift) {
     print $fw $gpx->xml(), "\n";
     close($fw);
 
-    system('xml_pp', '-i', $not);
+    # system('xml_pp', '-i', $not);
     open(my $dw, '>>', $not) or die "Can't write $not ($!)\n";
     #my $dw = $fw;
     print $dw "----------------------------------\n";
