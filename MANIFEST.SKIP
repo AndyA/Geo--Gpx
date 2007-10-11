@@ -2,6 +2,7 @@
 \.tar\.gz$
 \B\.svn\b
 ^\.cvsignore
+^\.perltidyrc
 
 # Makemaker generated files and dirs.
 ^MANIFEST\.
