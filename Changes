@@ -27,3 +27,8 @@ Revision history for Geo-Gpx
 
 0.19    2007-10-11
         Fixed wpt element ordering per #29909
+
+0.20    2007-10-11
+        Release to (hopefully) fix bizarre test failures.
+
+0.21    
