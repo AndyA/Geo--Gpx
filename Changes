@@ -35,3 +35,7 @@ Revision history for Geo-Gpx
 
 0.22    2009-03-08
         Always use UTC for timestamps. Refs #34463. 
+        Make bounds work as documented. Add TO_JSON support for JSON
+        encoding. Refs #34458. Thanks to Steve Purkis.
+
+

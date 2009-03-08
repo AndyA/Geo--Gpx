@@ -410,6 +410,7 @@ sub iterate_points {
 
 sub bounds {
   my ( $self, $iter ) = @_;
+  $iter ||= $self->iterate_points;
 
   my $bounds = {};
 
@@ -612,6 +613,20 @@ sub xml {
   return join( '', @ret );
 }
 
+# for JSON:: modules...
+sub TO_JSON {
+  my $self = shift;
+  my %json;    #= map {$_ => $self->$_} ...
+  for my $key ( @META, @ATTR ) {
+    my $val = $self->$key;
+    $json{$key} = $val if defined( $val );
+  }
+  if ( my $bounds = $self->bounds ) {
+    $json{bounds} = $self->bounds;
+  }
+  return \%json;
+}
+
 #### Legacy methods from 0.10
 
 sub gpx {
@@ -689,7 +704,7 @@ parseable by both GPX Spinner and EasyGPS. As of version 0.13 it has
 been extended to support general parsing and generation of GPX data. GPX
 1.0 and 1.1 are supported.
 
-=head1 INTERFACE 
+=head1 INTERFACE
 
 =over
 
@@ -705,24 +720,24 @@ converted into a GPX file. This behaviour is maintained by this release:
 New applications can use C<Geo::Gpx> to parse a GPX file:
 
     my $gpx = Geo::Gpx->new( xml => $gpx_document );
-    
+
 or from an open filehandle:
 
     my $gpx = Geo::Gpx->new( input => $fh );
-    
+
 or can create an empty container to which waypoints, routes and tracks can then be added:
 
     my $gpx = Geo::Gpx->new();
     $gpx->waypoints( \@wpt );
 
-=item C<bounds()>
+=item C<bounds( [ $iterator ] )>
 
 Compute the bounding box of all the points in a C<Geo::Gpx> returning the result as a hash
 reference. For example:
 
     my $gpx = Geo::Gpx->new( xml => $some_xml );
     my $bounds = $gpx->bounds();
-    
+
 returns a structure like this:
 
     $bounds = {
@@ -732,12 +747,14 @@ returns a structure like this:
         maxlon  => -1.230902
     };
 
+C<$iterator> defaults to C<$self-E<gt>iterate_points>.
+
 =item C<name( [ $newname ] )>
 
 Accessor for the <name> element of a GPX. To get the name:
 
     my $name = $gpx->name();
-    
+
 and to set it:
 
     $gpx->name('My big adventure');
@@ -747,7 +764,7 @@ and to set it:
 Accessor for the <desc> element of a GPX. To get the the description:
 
     my $desc = $gpx->desc();
-    
+
 and to set it:
 
     $gpx->desc('Got lost, wandered around for ages, got cold, got hungry.');
@@ -775,7 +792,7 @@ When setting the author data a similar structure must be supplied:
     $gpx->author({
         name => 'Me!'
     });
-    
+
 The bizarre encoding of email addresses as id and domain is a feature of GPX.
 
 =item C<time( [ $newtime ] )>
@@ -822,7 +839,7 @@ Accessor for the <link> element of a GPX. Links are stored in a hash like this:
         'text' => 'Hexten',
         'href' => 'http://hexten.net/'
     };
-    
+
 For example:
 
     $gpx->link({ href => 'http://google.com/', text => 'Google' });
@@ -859,7 +876,7 @@ may also be a C<Geo::Cache> instance in legacy mode):
         ageofdgpsdata => 45,
         dgpsid        => 247
     };
-    
+
 All fields apart from C<lat> and C<lon> are optional. See the GPX
 specification for an explanation of the fields. The waypoints array
 is an anonymous array of such points:
@@ -1049,7 +1066,7 @@ Generate GPX XML.
 
     my $gpx10 = $gpx->xml('1.0');
     my $gpx11 = $gpx->xml('1.1');
-    
+
 If the version is omitted it defaults to the value of the C<version>
 attibute. Parsing a GPX document sets the version. If the C<version>
 attribute is unset defaults to 1.0.
@@ -1060,6 +1077,18 @@ original application of that module which aren't appropriate for general
 purpose GPX manipulation. Legacy mode is triggered by passing a list of
 C<Geo::Cache> points to the constructor; this should probably be avoided
 for new applications.
+
+=item C<TO_JSON>
+
+For compatability with L<JSON> modules.  Converts this object to a hash with
+keys that correspond to the above methods.  Generated ala:
+
+  my %json = map {$_ => $self->$_}
+    qw(name desc author keywords copyright
+       time link waypoints tracks routes version );
+  $json{bounds} = $self->bounds( $iter );
+
+With one difference: the keys will only be set if they are defined.
 
 =item C<gpx>
 
@@ -1107,7 +1136,7 @@ None reported.
 
 =head1 SEE ALSO
 
-L<Geo::Cache> 
+L<Geo::Cache>, L<JSON>
 
 =head1 BUGS AND LIMITATIONS
 
@@ -1152,3 +1181,5 @@ RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES OR A
 FAILURE OF THE SOFTWARE TO OPERATE WITH ANY OTHER SOFTWARE), EVEN IF
 SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGES.
+
+=cut

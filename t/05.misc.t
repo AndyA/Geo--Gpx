@@ -1,16 +1,17 @@
 use strict;
 use warnings;
-use Test::More tests => 5;
+use Test::More tests => 9;
 
 use Geo::Gpx;
 
-my @wpt = (
+my $time = time();
+my @wpt  = (
   {
     # All standard GPX fields
     lat         => 54.786989,
     lon         => -2.344214,
     ele         => 512,
-    time        => time(),
+    time        => $time,
     magvar      => 0,
     geoidheight => 0,
     name        => 'My house & home',
@@ -58,5 +59,49 @@ my @wpt = (
     my $gpx = new Geo::Gpx;
     eval { $gpx->add_waypoint( $wpt ) };
     like $@, qr/mandatory in waypoint/, "mandatory lat, lon OK";
+  }
+}
+
+{
+  my $gpx = Geo::Gpx->new;
+  $gpx->add_waypoint( @wpt );
+  my $iter   = $gpx->iterate_points;
+  my $bounds = {
+    'maxlat' => 54.786989,
+    'maxlon' => -2.344214,
+    'minlat' => -38.870059,
+    'minlon' => -151.21003,
+  };
+  is_deeply $gpx->bounds, $bounds,
+   "gpx->bounds doesn't require an iterator";
+}
+
+{
+  my $gpx = Geo::Gpx->new;
+  $gpx->add_waypoint( @wpt );
+  my $iter   = $gpx->iterate_points;
+  my $expect = {
+    waypoints => \@wpt,
+    bounds    => {
+      'maxlat' => 54.786989,
+      'maxlon' => -2.344214,
+      'minlat' => -38.870059,
+      'minlon' => -151.21003,
+    },
+    time => $time,
+  };
+  is_deeply $gpx->TO_JSON, $expect, "TO_JSON";
+  $gpx->name( 'spurkis' );
+  $expect->{name} = 'spurkis';
+  is_deeply $gpx->TO_JSON, $expect, "TO_JSON now has a name";
+
+  SKIP: {
+    eval "use JSON";
+    skip 'JSON not installed', 1 if $@;
+
+    my $coder = JSON->new->allow_blessed->convert_blessed;
+    my $json  = $coder->decode( $coder->encode( $gpx ) );
+    my $json2 = $coder->decode( $coder->encode( $expect ) );
+    is_deeply $json, $json2, "works with JSON module";
   }
 }
