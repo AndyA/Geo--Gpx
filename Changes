@@ -31,4 +31,7 @@ Revision history for Geo-Gpx
 0.20    2007-10-11
         Release to (hopefully) fix bizarre test failures.
 
-0.21    
+0.21    2007-10-13
+
+0.22    2009-03-08
+        Always use UTC for timestamps. Refs #34463. 

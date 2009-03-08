@@ -91,7 +91,7 @@ sub _init_legacy {
       return Geo::Cache->new( @_ );
     },
     time => sub {
-      my $ts = time2str( '%Y-%m-%dT%H:%M:%S.0000000%z', $_[0] );
+      my $ts = time2str( '%Y-%m-%dT%H:%M:%S.0000000%z', $_[0], 'UTC' );
       $ts =~ s/(\d{2})$/:$1/;
       return $ts;
     },
@@ -108,7 +108,7 @@ sub _init_shiny_new {
       return {@_};
     },
     time => sub {
-      return time2str( '%Y-%m-%dT%H:%M:%SZ', $_[0] );
+      return time2str( '%Y-%m-%dT%H:%M:%SZ', $_[0], 'UTC' );
     },
   };
 }
