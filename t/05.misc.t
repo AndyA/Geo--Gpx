@@ -99,7 +99,12 @@ my @wpt  = (
     eval "use JSON";
     skip 'JSON not installed', 1 if $@;
 
-    my $coder = JSON->new->allow_blessed->convert_blessed;
+    my $coder = JSON->new;
+    for my $method ( qw( allow_blessed convert_blessed ) ) {
+      skip "JSON doesn't support $method", 1
+       unless $coder->can( $method );
+    }
+    $coder->allow_blessed->convert_blessed;
     my $json  = $coder->decode( $coder->encode( $gpx ) );
     my $json2 = $coder->decode( $coder->encode( $expect ) );
     is_deeply $json, $json2, "works with JSON module";

@@ -38,4 +38,6 @@ Revision history for Geo-Gpx
         Make bounds work as documented. Add TO_JSON support for JSON
         encoding. Refs #34458. Thanks to Steve Purkis.
 
+0.23    2009-03-08
+        Skip JSON tests if installed JSON is too old.
 
