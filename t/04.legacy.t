@@ -4,10 +4,10 @@ use Geo::Gpx;
 use Test::More;
 
 BEGIN {
-    eval "use Geo::Cache";
-    plan skip_all => 'Geo::Cache not available' if $@;
-    eval "use Test::XML";
-    plan skip_all => 'Test::XML not available' if $@;
+  eval "use Geo::Cache";
+  plan skip_all => 'Geo::Cache not available' if $@;
+  eval "use Test::XML";
+  plan skip_all => 'Test::XML not available' if $@;
 }
 
 plan tests => 1;
@@ -18,39 +18,39 @@ my $xml;
 $xml = normalise( $xml );
 
 my @pts = (
-    new Geo::Cache(
-        lat  => 45.460366651,
-        lon  => -75.767939974,
-        ele  => 33.700000,
-        name => 'WP0001',
-        cmt  => 'WP0001',
-        desc => 'WP0001',
-        fix  => '2d',
-        sat  => 3,
-        pdop => 30.600000,
-    ),
-    new Geo::Cache(
-        lat  => 45.460339984,
-        lon  => -75.767591640,
-        ele  => 33.700000,
-        name => 'WP0002',
-        cmt  => 'WP0002',
-        desc => 'WP0002',
-        fix  => '2d',
-        sat  => 3,
-        pdop => 30.600000,
-    ),
-    new Geo::Cache(
-        lat  => 45.458376651,
-        lon  => -75.768483307,
-        ele  => 105.400000,
-        name => 'WP0003',
-        cmt  => 'WP0003',
-        desc => 'WP0003',
-        fix  => 'dgps',
-        sat  => 7,
-        pdop => 1.400000,
-    )
+  new Geo::Cache(
+    lat  => 45.460366651,
+    lon  => -75.767939974,
+    ele  => 33.700000,
+    name => 'WP0001',
+    cmt  => 'WP0001',
+    desc => 'WP0001',
+    fix  => '2d',
+    sat  => 3,
+    pdop => 30.600000,
+  ),
+  new Geo::Cache(
+    lat  => 45.460339984,
+    lon  => -75.767591640,
+    ele  => 33.700000,
+    name => 'WP0002',
+    cmt  => 'WP0002',
+    desc => 'WP0002',
+    fix  => '2d',
+    sat  => 3,
+    pdop => 30.600000,
+  ),
+  new Geo::Cache(
+    lat  => 45.458376651,
+    lon  => -75.768483307,
+    ele  => 105.400000,
+    name => 'WP0003',
+    cmt  => 'WP0003',
+    desc => 'WP0003',
+    fix  => 'dgps',
+    sat  => 7,
+    pdop => 1.400000,
+  )
 );
 
 my $gpx = Geo::Gpx->new( @pts );
@@ -66,36 +66,37 @@ is_xml( $gxml, $xml, 'same output as previous version' );
 # }
 
 sub normalise {
-    my $xml = shift;
+  my $xml = shift;
 
-    # Remove leading spaces in case we decide to indent the output
-    $xml =~ s{^\s+}{}msg;
-    my $fix_time = sub {
-        my $tm = shift;
-        $tm =~ s{\d}{9}g;
-        $tm =~ s{[+-]}{-}g;
-        return $tm;
-    };
-    $xml =~ s{(<time>)(.*?)(</time>)}{$1 . $fix_time->($2) . $3}eg;
-    my $fix_coord = sub {
-        my $co = shift;
-        return sprintf( "%.6f", $co );
-    };
-    $xml =~ s{((?:lat|lon)=\")([^\"]+)(\")}{$1 . $fix_coord->($2) . $3}eg;
-    $xml =~ s{<groundspeak:cache id="\d+"}{<groundspeak:cache id="99999"}g;
+  # Remove leading spaces in case we decide to indent the output
+  $xml =~ s{^\s+}{}msg;
+  my $fix_time = sub {
+    my $tm = shift;
+    $tm =~ s{\d}{9}g;
+    $tm =~ s{[+-]}{-}g;
+    return $tm;
+  };
+  $xml =~ s{(<time>)(.*?)(</time>)}{$1 . $fix_time->($2) . $3}eg;
+  my $fix_coord = sub {
+    my $co = shift;
+    return sprintf( "%.6f", $co );
+  };
+  $xml =~ s{((?:lat|lon)=\")([^\"]+)(\")}{$1 . $fix_coord->($2) . $3}eg;
+  $xml
+   =~ s{<groundspeak:cache id="\d+"}{<groundspeak:cache id="99999"}g;
 
-    # Oops :)
-    # That's a bug Geo::Cache - nothing to do with us.
-    $xml =~ s{</groundpeak:state>}{</groundspeak:state>}g;
+  # Oops :)
+  # That's a bug Geo::Cache - nothing to do with us.
+  $xml =~ s{</groundpeak:state>}{</groundspeak:state>}g;
 
-    return $xml;
+  return $xml;
 }
 
 sub save {
-    my ( $name, $xml ) = @_;
-    open( my $fh, '>', $name ) or die "Can't write $name ($!)\n";
-    print $fh $xml;
-    close( $fh );
+  my ( $name, $xml ) = @_;
+  open( my $fh, '>', $name ) or die "Can't write $name ($!)\n";
+  print $fh $xml;
+  close( $fh );
 }
 
 __DATA__

@@ -13,12 +13,14 @@ $| = 1;
 
 my $gpx = Geo::Gpx->new();
 
-print $gpx->_xml('test', 'pork');
-print $gpx->_xml('link', { href => 'http://hexten.net/', name => 'Frob' });
-print $gpx->_xml('wpt', { lat => 10, lon => 10, time => time() });
-print $gpx->_xml('count', [ {name=>'one'}, {name=>'two'}, {name=>'three'} ]);
+print $gpx->_xml( 'test', 'pork' );
+print $gpx->_xml( 'link',
+  { href => 'http://hexten.net/', name => 'Frob' } );
+print $gpx->_xml( 'wpt', { lat => 10, lon => 10, time => time() } );
+print $gpx->_xml( 'count',
+  [ { name => 'one' }, { name => 'two' }, { name => 'three' } ] );
 
-# 
+#
 # my @wpt = (
 #     {
 #         # All standard GPX fields
@@ -54,29 +56,29 @@ print $gpx->_xml('count', [ {name=>'one'}, {name=>'two'}, {name=>'three'} ]);
 #         name          => 'Sydney, AU'
 #     }
 # );
-# 
+#
 # $gpx->waypoints(\@wpt);
-# 
+#
 # $gpx->name('Test');
 # $gpx->desc('Test data');
-# $gpx->author({ 
-#     name    => 'Andy Armstrong', 
+# $gpx->author({
+#     name    => 'Andy Armstrong',
 #     email   => {
-#         id      => 'andy', 
+#         id      => 'andy',
 #         domain  => 'hexten.net'
 #     },
-#     link    => { 
-#         href    => 'http://hexten.net/', 
-#         text    => 'Hexten' 
-#     } 
+#     link    => {
+#         href    => 'http://hexten.net/',
+#         text    => 'Hexten'
+#     }
 # });
 # $gpx->copyright('(c) Anyone');
 # $gpx->link({
-#     href => 'http://www.topografix.com/GPX', 
-#     text => 'GPX Spec', 
-#     type => 'unknown' 
+#     href => 'http://www.topografix.com/GPX',
+#     text => 'GPX Spec',
+#     type => 'unknown'
 # });
 # $gpx->time(time());
 # $gpx->keywords(['this', 'that', 'the other']);
-# 
+#
 # print $gpx->xml();

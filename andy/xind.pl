@@ -11,23 +11,24 @@ $| = 1;
 
 my $depth = 0;
 
-while (my $ln = <>) {
-    $depth = 0 if $depth < 0;
-    chomp $ln;
-    my $spec = '';
-    while ($ln =~ m{<([^>]*)>}g) {
-        my $tag = $1;
-        if ($tag =~ m{^\w} && $tag !~ m{/$}) {
-            $spec .= 'i';
-        } elsif ($tag =~ m{^/}) {
-            $spec .= 'o';
-        }
+while ( my $ln = <> ) {
+  $depth = 0 if $depth < 0;
+  chomp $ln;
+  my $spec = '';
+  while ( $ln =~ m{<([^>]*)>}g ) {
+    my $tag = $1;
+    if ( $tag =~ m{^\w} && $tag !~ m{/$} ) {
+      $spec .= 'i';
     }
-    if ($spec =~ m{^(o+)(.*)$}) {
-        $depth -= length($1);
-        $spec = $2;
+    elsif ( $tag =~ m{^/} ) {
+      $spec .= 'o';
     }
-    my $pad = '  ' x $depth;
-    print "$pad$ln\n";
-    $depth += ($spec =~ m{i}g) - ($spec =~ m{o}g);
+  }
+  if ( $spec =~ m{^(o+)(.*)$} ) {
+    $depth -= length( $1 );
+    $spec = $2;
+  }
+  my $pad = '  ' x $depth;
+  print "$pad$ln\n";
+  $depth += ( $spec =~ m{i}g ) - ( $spec =~ m{o}g );
 }
