@@ -117,6 +117,7 @@ sub new {
   my ( $class, @args ) = @_;
   my $self = bless( {}, $class );
 
+  # CORE::time because we have our own time method.
   $self->{time} = CORE::time();
 
   # Has to handle same calling convention as previous
