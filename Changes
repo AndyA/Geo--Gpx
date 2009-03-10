@@ -41,3 +41,5 @@ Revision history for Geo-Gpx
 0.23    2009-03-08
         Skip JSON tests if installed JSON is too old.
 
+0.24    2009-03-10
+        Avoid clock skew in JSON tests.

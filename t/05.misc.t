@@ -65,7 +65,6 @@ my @wpt  = (
 {
   my $gpx = Geo::Gpx->new;
   $gpx->add_waypoint( @wpt );
-  my $iter   = $gpx->iterate_points;
   my $bounds = {
     'maxlat' => 54.786989,
     'maxlon' => -2.344214,
@@ -78,8 +77,10 @@ my @wpt  = (
 
 {
   my $gpx = Geo::Gpx->new;
+  # Violate encapsulation, avoid clock skew.
+  $gpx->{time} = $time;
+
   $gpx->add_waypoint( @wpt );
-  my $iter   = $gpx->iterate_points;
   my $expect = {
     waypoints => \@wpt,
     bounds    => {
@@ -100,7 +101,8 @@ my @wpt  = (
     skip 'JSON not installed', 1 if $@;
 
     my $coder = JSON->new;
-    for my $method ( qw( allow_blessed convert_blessed ) ) {
+    my @need  = qw( encode decode allow_blessed convert_blessed );
+    for my $method ( @need ) {
       skip "JSON doesn't support $method", 1
        unless $coder->can( $method );
     }
