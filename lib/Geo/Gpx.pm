@@ -4,13 +4,12 @@ use warnings;
 use strict;
 
 use Carp;
+use DateTime::Format::ISO8601;
+use DateTime;
 use HTML::Entities qw( encode_entities encode_entities_numeric );
 use Scalar::Util qw( blessed );
 use Time::Local;
 use XML::Descent;
-
-use DateTime;
-use DateTime::Format::ISO8601;
 
 =head1 NAME
 
@@ -22,25 +21,25 @@ This document describes Geo::Gpx version 0.26
 
 =head1 SYNOPSIS
 
-    # Version 0.10 compatibility
-    use Geo::Gpx;
-    my $gpx = Geo::Gpx->new( @waypoints );
-    my $xml = $gpx->xml;
+  # Version 0.10 compatibility
+  use Geo::Gpx;
+  my $gpx = Geo::Gpx->new( @waypoints );
+  my $xml = $gpx->xml;
 
-    # New API, generate GPX
-    my $gpx = Geo::Gpx->new();
-    $gpx->waypoints(\@wpt);
-    my $xml = $gpx->xml('1.0');
+  # New API, generate GPX
+  my $gpx = Geo::Gpx->new();
+  $gpx->waypoints( \@wpt );
+  my $xml = $gpx->xml( '1.0' );
 
-    # Parse GPX
-    my $gpx = Geo::Gpx->new( xml => $xml );
-    my $waypoints = $gpx->waypoints();
-    my $tracks = $gpx->tracks();
+  # Parse GPX
+  my $gpx       = Geo::Gpx->new( xml => $xml );
+  my $waypoints = $gpx->waypoints();
+  my $tracks    = $gpx->tracks();
 
-    # Parse GPX from open file
-    my $gpx = Geo::Gpx->new( input => $fh );
-    my $waypoints = $gpx->waypoints();
-    my $tracks = $gpx->tracks();
+  # Parse GPX from open file
+  my $gpx       = Geo::Gpx->new( input => $fh );
+  my $waypoints = $gpx->waypoints();
+  my $tracks    = $gpx->tracks();
 
 =head1 DESCRIPTION
 
@@ -185,26 +184,26 @@ sub _init_shiny_new {
 =head2 C<new( { args } )>
 
 The original purpose of C<Geo::Gpx> was to allow an array of
-C<Geo::Cache> objects to be converted into a GPX file. This behaviour is
+L<Geo::Cache> objects to be converted into a GPX file. This behaviour is
 maintained by this release:
 
-    use Geo::Gpx;
-    my $gpx = Geo::Gpx->new( @waypoints );
-    my $xml = $gpx->xml;
+  use Geo::Gpx;
+  my $gpx = Geo::Gpx->new( @waypoints );
+  my $xml = $gpx->xml;
 
-New applications can use C<Geo::Gpx> to parse a GPX file:
+New applications can use C <Geo::Gpx> to parse a GPX file :
 
-    my $gpx = Geo::Gpx->new( xml => $gpx_document );
+ my $gpx = Geo::Gpx->new( xml => $gpx_document );
 
-or from an open filehandle:
+or from an open filehandle :
 
-    my $gpx = Geo::Gpx->new( input => $fh );
+ my $gpx = Geo::Gpx->new( input => $fh );
 
 or can create an empty container to which waypoints, routes and tracks
 can then be added:
 
-    my $gpx = Geo::Gpx->new();
-    $gpx->waypoints( \@wpt );
+  my $gpx = Geo::Gpx->new();
+  $gpx->waypoints( \@wpt );
 
 The following additional options can be specified:
 
@@ -394,34 +393,34 @@ Add one or more waypoints. Each waypoint must be a reference to a
 hash. Each waypoint must include the keys C<lat> and C<lon> and may
 include others:
 
-    my $wpt = {
-        lat           => 54.786989,
-        lon           => -2.344214,
-        ele           => 512,
-        time          => 1164488503,
-        magvar        => 0,
-        geoidheight   => 0,
-        name          => 'My house & home',
-        cmt           => 'Where I live',
-        desc          => '<<Chez moi>>',
-        src           => 'Testing',
-        link          => {
-            href => 'http://hexten.net/',
-            text => 'Hexten',
-            type => 'Blah'
-        },
-        sym           => 'pin',
-        type          => 'unknown',
-        fix           => 'dgps',
-        sat           => 3,
-        hdop          => 10,
-        vdop          => 10,
-        pdop          => 10,
-        ageofdgpsdata => 45,
-        dgpsid        => 247
-    };
+  my $wpt = {
+    lat         => 54.786989,
+    lon         => -2.344214,
+    ele         => 512,
+    time        => 1164488503,
+    magvar      => 0,
+    geoidheight => 0,
+    name        => 'My house & home',
+    cmt         => 'Where I live',
+    desc        => '<<Chez moi>>',
+    src         => 'Testing',
+    link        => {
+      href => 'http://hexten.net/',
+      text => 'Hexten',
+      type => 'Blah'
+    },
+    sym           => 'pin',
+    type          => 'unknown',
+    fix           => 'dgps',
+    sat           => 3,
+    hdop          => 10,
+    vdop          => 10,
+    pdop          => 10,
+    ageofdgpsdata => 45,
+    dgpsid        => 247
+  };
 
-    $gpx->add_waypoint( $wpt );
+  $gpx->add_waypoint( $wpt );
 
 Time values may either be an epoch offset or a L<DateTime>. If you wish
 to specify the timezone use a L<DateTime>.
@@ -532,10 +531,10 @@ sub iterate_trackpoints {
 
 Get an iterator that visits all the points in a C<Geo::Gpx>. For example
 
-    my $iter = $gpx->iterate_points();
-    while (my $pt = $iter->()) {
-        print "Point: ", join(', ', $pt->{lat}, $pt->{lon}), "\n";
-    }
+  my $iter = $gpx->iterate_points();
+  while ( my $pt = $iter->() ) {
+    print "Point: ", join( ', ', $pt->{lat}, $pt->{lon} ), "\n";
+  }
 
 =cut
 
@@ -554,17 +553,17 @@ sub iterate_points {
 Compute the bounding box of all the points in a C<Geo::Gpx> returning
 the result as a hash reference. For example:
 
-    my $gpx = Geo::Gpx->new( xml => $some_xml );
-    my $bounds = $gpx->bounds();
+  my $gpx = Geo::Gpx->new( xml => $some_xml );
+  my $bounds = $gpx->bounds();
 
 returns a structure like this:
 
-    $bounds = {
-        minlat  => 57.120939,
-        minlon  => -2.9839832,
-        maxlat  => 57.781729,
-        maxlon  => -1.230902
-    };
+  $bounds = {
+    minlat => 57.120939,
+    minlon => -2.9839832,
+    maxlat => 57.781729,
+    maxlon => -1.230902
+  };
 
 C<$iterator> defaults to C<$self-E<gt>iterate_points>.
 
@@ -679,18 +678,18 @@ sub _cmp_ver {
 
 Generate GPX XML.
 
-    my $gpx10 = $gpx->xml('1.0');
-    my $gpx11 = $gpx->xml('1.1');
+  my $gpx10 = $gpx->xml( '1.0' );
+  my $gpx11 = $gpx->xml( '1.1' );
 
 If the version is omitted it defaults to the value of the C<version>
 attibute. Parsing a GPX document sets the version. If the C<version>
 attribute is unset defaults to 1.0.
 
-C<Geo::Gpx> version 0.10 used C<Geo::Cache> to render each of the
-points. C<Geo::Cache> generates a number of hardwired values to suit the
+C<Geo::Gpx> version 0.10 used L<Geo::Cache> to render each of the
+points. L<Geo::Cache> generates a number of hardwired values to suit the
 original application of that module which aren't appropriate for general
 purpose GPX manipulation. Legacy mode is triggered by passing a list of
-C<Geo::Cache> points to the constructor; this should probably be avoided
+L<Geo::Cache> points to the constructor; this should probably be avoided
 for new applications.
 
 =cut
@@ -799,10 +798,9 @@ sub xml {
 For compatability with L<JSON> modules. Converts this object to a hash
 with keys that correspond to the above methods. Generated ala:
 
-
-  my %json = map {$_ => $self->$_}
-    qw(name desc author keywords copyright
-       time link waypoints tracks routes version );
+  my %json = map { $_ => $self->$_ }
+   qw(name desc author keywords copyright
+   time link waypoints tracks routes version );
   $json{bounds} = $self->bounds( $iter );
 
 With one difference: the keys will only be set if they are defined.
@@ -884,45 +882,45 @@ __END__
 
 Accessor for the <name> element of a GPX. To get the name:
 
-    my $name = $gpx->name();
+  my $name = $gpx->name();
 
 and to set it:
 
-    $gpx->name('My big adventure');
+  $gpx->name( 'My big adventure' );
 
 =head2 C<desc( [ $newdesc ] )>
 
 Accessor for the <desc> element of a GPX. To get the the description:
 
-    my $desc = $gpx->desc();
+  my $desc = $gpx->desc();
 
 and to set it:
 
-    $gpx->desc('Got lost, wandered around for ages, got cold, got hungry.');
+  $gpx->desc('Got lost, wandered around for ages, got cold, got hungry.');
 
 =head2 C<author( [ $newauthor ] )>
 
 Accessor for the author structure of a GPX. The author information is stored
 in a hash that reflects the structure of a GPX 1.1 document:
 
-    my $author = $gpx->author();
-    $author = {
-        'link' => {
-            'text' => 'Hexten',
-            'href' => 'http://hexten.net/'
-        },
-        'email' => {
-            'domain' => 'hexten.net',
-            'id' => 'andy'
-        },
-        'name' => 'Andy Armstrong'
+  my $author = $gpx->author();
+  $author = {
+    link => {
+      text => 'Hexten',
+      href => 'http://hexten.net/'
     },
+    email => {
+      domain => 'hexten.net',
+      id => 'andy'
+    },
+    name => 'Andy Armstrong'
+  },
 
 When setting the author data a similar structure must be supplied:
 
-    $gpx->author({
-        name => 'Me!'
-    });
+  $gpx->author({
+    name => 'Me!'
+  });
 
 The bizarre encoding of email addresses as id and domain is a
 feature of GPX.
@@ -942,124 +940,123 @@ L<DateTime> object.
 Access for the <keywords> element of a GPX. Keywords are stored as an
 array reference:
 
-    $gpx->keywords(['bleak', 'cold', 'scary']);
-    my $k = $gpx->keywords();
-    print join(', ', @{$k}), "\n";
+  $gpx->keywords(['bleak', 'cold', 'scary']);
+  my $k = $gpx->keywords();
+  print join(', ', @{$k}), "\n";
 
 prints
 
-    bleak, cold, scary
+  bleak, cold, scary
 
 =head2 C<copyright( [ $newcopyright ] )>
 
 Access for the <copyright> element of a GPX.
 
-    $gpx->copyright('(c) You Know Who');
-    print $gpx->copyright(), "\n";
+  $gpx->copyright('(c) You Know Who');
+  print $gpx->copyright(), "\n";
 
 prints
 
-    You Know Who
+  You Know Who
 
 =head2 C<link>
 
 Accessor for the <link> element of a GPX. Links are stored in a hash
 like this:
 
-    $link = {
-        'text' => 'Hexten',
-        'href' => 'http://hexten.net/'
-    };
+  $link = {
+    'text' => 'Hexten',
+    'href' => 'http://hexten.net/'
+  };
 
 For example:
 
-    $gpx->link({ href => 'http://google.com/', text => 'Google' });
+  $gpx->link({ href => 'http://google.com/', text => 'Google' });
 
 =head2 C<waypoints( [ $newwaypoints ] )>
 
 Accessor for the waypoints array of a GPX. Each waypoint is a hash
-(which may also be a C<Geo::Cache> instance in legacy mode):
+(which may also be a L<Geo::Cache> instance in legacy mode):
 
-
-    my $wpt = {
-        # All standard GPX fields
-        lat           => 54.786989,
-        lon           => -2.344214,
-        ele           => 512,
-        time          => 1164488503,
-        magvar        => 0,
-        geoidheight   => 0,
-        name          => 'My house & home',
-        cmt           => 'Where I live',
-        desc          => '<<Chez moi>>',
-        src           => 'Testing',
-        link          => {
-            href => 'http://hexten.net/',
-            text => 'Hexten',
-            type => 'Blah'
-        },
-        sym           => 'pin',
-        type          => 'unknown',
-        fix           => 'dgps',
-        sat           => 3,
-        hdop          => 10,
-        vdop          => 10,
-        pdop          => 10,
-        ageofdgpsdata => 45,
-        dgpsid        => 247
-    };
+  my $wpt = {
+    # All standard GPX fields
+    lat           => 54.786989,
+    lon           => -2.344214,
+    ele           => 512,
+    time          => 1164488503,
+    magvar        => 0,
+    geoidheight   => 0,
+    name          => 'My house & home',
+    cmt           => 'Where I live',
+    desc          => '<<Chez moi>>',
+    src           => 'Testing',
+    link          => {
+      href => 'http://hexten.net/',
+      text => 'Hexten',
+      type => 'Blah'
+    },
+    sym           => 'pin',
+    type          => 'unknown',
+    fix           => 'dgps',
+    sat           => 3,
+    hdop          => 10,
+    vdop          => 10,
+    pdop          => 10,
+    ageofdgpsdata => 45,
+    dgpsid        => 247
+  };
 
 All fields apart from C<lat> and C<lon> are optional. See the GPX
 specification for an explanation of the fields. The waypoints array is
 an anonymous array of such points:
 
-    $gpx->waypoints([ { lat => 57.0, lon => -2 },
-                      { lat => 57.2, lon => -2.1 } ]);
+  $gpx->waypoints([ { lat => 57.0, lon => -2 },
+                    { lat => 57.2, lon => -2.1 } ]);
 
 =head2 C<routes( [ $newroutes ] )>
 
 Accessor for the routes array. The routes array is an array of hashes
 like this:
 
-    my $routes = [
+  my $routes = [
+    {
+      'name' => 'Route 1'
+      'points' => [
         {
-            'name' => 'Route 1'
-            'points' => [
-                {
-                    'lat' => '54.3286193447719',
-                    'name' => 'WPT1',
-                    'lon' => '-2.38972155527137'
-                },
-                {
-                    'lat' => '54.6634365629388',
-                    'name' => 'WPT2',
-                    'lon' => '-2.55373552512617'
-                },
-                {
-                    'lat' => '54.7289259665049',
-                    'name' => 'WPT3',
-                    'lon' => '-3.05196861273443'
-                }
-            ],
+          'lat' => '54.3286193447719',
+          'name' => 'WPT1',
+          'lon' => '-2.38972155527137'
         },
         {
-            'name' => 'Route 2'
-            'points' => [
-                {
-                    'lat' => '54.4165154835049',
-                    'name' => 'WPT4',
-                    'lon' => '-2.56153453279676'
-                },
-                {
-                    'lat' => '54.6670126167344',
-                    'name' => 'WPT5',
-                    'lon' => '-2.69526089464403'
-                }
-            ],
+          'lat' => '54.6634365629388',
+          'name' => 'WPT2',
+          'lon' => '-2.55373552512617'
+        },
+        {
+          'lat' => '54.7289259665049',
+          'name' => 'WPT3',
+          'lon' => '-3.05196861273443'
         }
-    ];
+      ],
+    },
+    {
+      'name' => 'Route 2'
+      'points' => [
+        {
+          'lat' => '54.4165154835049',
+          'name' => 'WPT4',
+          'lon' => '-2.56153453279676'
+        },
+        {
+          'lat' => '54.6670126167344',
+          'name' => 'WPT5',
+          'lon' => '-2.69526089464403'
+        }
+      ],
+    }
+  ];
 
-    $gpx->routes($routes);
+  $gpx->routes($routes);
 
 Each of the points in a route may have any of the atttibutes that are
 legal for a waypoint.
@@ -1069,77 +1066,77 @@ legal for a waypoint.
 Accessor for the tracks array. The tracks array is an array of hashes
 like this:
 
-    my $tracks = [
+  my $tracks = [
+    {
+      'name' => 'Track 1',
+      'segments' => [
         {
-            'name' => 'Track 1',
-            'segments' => [
-                {
-                    'points' => [
-                        {
-                            'lat' => '54.5182217145253',
-                            'lon' => '-2.62191579018834'
-                        },
-                        {
-                            'lat' => '54.1507759448355',
-                            'lon' => '-3.05774931478646'
-                        },
-                        {
-                            'lat' => '54.6016296784874',
-                            'lon' => '-3.40418920968631'
-                        }
-                    ]
-                },
-                {
-                    'points' => [
-                        {
-                            'lat' => '54.6862790450185',
-                            'lon' => '-3.68760108982739'
-                        }
-                    ]
-                }
-            ]
+          'points' => [
+            {
+              'lat' => '54.5182217145253',
+              'lon' => '-2.62191579018834'
+            },
+            {
+              'lat' => '54.1507759448355',
+              'lon' => '-3.05774931478646'
+            },
+            {
+              'lat' => '54.6016296784874',
+              'lon' => '-3.40418920968631'
+            }
+          ]
         },
         {
-            'name' => 'Track 2',
-            'segments' => [
-                {
-                    'points' => [
-                        {
-                            'lat' => '54.9927807628549',
-                            'lon' => '-4.04712811256436'
-                        },
-                        {
-                            'lat' => '55.1148395198045',
-                            'lon' => '-4.33623533555793'
-                        },
-                        {
-                            'lat' => '54.6214174046189',
-                            'lon' => '-4.26293674042878'
-                        },
-                        {
-                            'lat' => '55.0540816059084',
-                            'lon' => '-4.42261020671926'
-                        },
-                        {
-                            'lat' => '55.4451622411372',
-                            'lon' => '-4.32873765338'
-                        }
-                    ]
-                }
-            ]
+          'points' => [
+            {
+              'lat' => '54.6862790450185',
+              'lon' => '-3.68760108982739'
+            }
+          ]
         }
-    ];
+      ]
+    },
+    {
+      'name' => 'Track 2',
+      'segments' => [
+        {
+          'points' => [
+            {
+              'lat' => '54.9927807628549',
+              'lon' => '-4.04712811256436'
+            },
+            {
+              'lat' => '55.1148395198045',
+              'lon' => '-4.33623533555793'
+            },
+            {
+              'lat' => '54.6214174046189',
+              'lon' => '-4.26293674042878'
+            },
+            {
+              'lat' => '55.0540816059084',
+              'lon' => '-4.42261020671926'
+            },
+            {
+              'lat' => '55.4451622411372',
+              'lon' => '-4.32873765338'
+            }
+          ]
+        }
+      ]
+    }
+  ];
 
 =head2 C<version( [ $newversion ] )>
 
 Accessor for the schema version of a GPX document. Versions 1.0 and 1.1
 are supported.
 
-    print $gpx->version();
+  print $gpx->version();
 
 prints
 
-    1.0
+  1.0
 
 =head1 DIAGNOSTICS
 
@@ -1160,12 +1157,12 @@ C<link>, C<waypoints>, C<tracks>, C<routes> or C<version>.
 
 =head1 DEPENDENCIES
 
-Date::Format
-Date::Parse
-HTML::Entities
-Scalar::Util
-Time::Local
-XML::Descent
+L<DateTime::Format::ISO8601>,
+L<DateTime>,
+L<HTML::Entities>,
+L<Scalar::Util>,
+L<Time::Local>,
+L<XML::Descent> and optionally L<Geo::Cache>
 
 =head1 INCOMPATIBILITIES
 
