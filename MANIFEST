@@ -15,3 +15,4 @@ t/legacy.t
 t/misc.t
 t/pod-coverage.t
 t/pod.t
+META.yml
