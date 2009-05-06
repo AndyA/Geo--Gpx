@@ -203,9 +203,19 @@ or from an open filehandle:
 or can create an empty container to which waypoints, routes and tracks
 can then be added:
 
-
     my $gpx = Geo::Gpx->new();
     $gpx->waypoints( \@wpt );
+
+The following additional options can be specified:
+
+=over
+
+=item C< use_datetime >
+
+If true time values in parsed GPX will be L<DateTime> objects rather
+than epoch times.
+
+=back
 
 =cut
 
@@ -412,6 +422,9 @@ include others:
     };
 
     $gpx->add_waypoint( $wpt );
+
+Time values may either be an epoch offset or a L<DateTime>. If you wish
+to specify the timezone use a L<DateTime>.
 
 =cut
 
@@ -917,17 +930,12 @@ feature of GPX.
 =head2 C<time( [ $newtime ] )>
 
 Accessor for the <time> element of a GPX. The time is converted to a
-Unix epoch time when a GPX document is parsed and formatted
-appropriately when a GPX is generated
+Unix epoch time when a GPX document is parsed unless the C<use_datetime>
+option is specified in which case times will be represented as
+L<DateTime> objects.
 
-
-    print $gpx->time();
-
-prints
-
-    1164488503
-
-    $gpx->time(1164488503);
+When setting the time you may supply either an epoch time or a
+L<DateTime> object.
 
 =head2 C<keywords( [ $newkeywords ] )>
 
