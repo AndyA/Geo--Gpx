@@ -17,3 +17,6 @@
 \.(old|tmp|bak)$
 ^#.*#$
 ^\.#
+\.swp$
+Session.vim
+
