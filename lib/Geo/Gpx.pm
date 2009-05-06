@@ -2,13 +2,54 @@ package Geo::Gpx;
 
 use warnings;
 use strict;
+
 use Carp;
-use XML::Descent;
+use HTML::Entities qw( encode_entities encode_entities_numeric );
+use Scalar::Util qw( blessed );
 use Time::Local;
-use HTML::Entities qw(encode_entities encode_entities_numeric);
-use Date::Parse;
-use Date::Format;
-use Scalar::Util qw(blessed);
+use XML::Descent;
+
+use DateTime;
+use DateTime::Format::ISO8601;
+
+=head1 NAME
+
+Geo::Gpx - Create and parse GPX files.
+
+=head1 VERSION
+
+This document describes Geo::Gpx version 0.25
+
+=head1 SYNOPSIS
+
+    # Version 0.10 compatibility
+    use Geo::Gpx;
+    my $gpx = Geo::Gpx->new( @waypoints );
+    my $xml = $gpx->xml;
+
+    # New API, generate GPX
+    my $gpx = Geo::Gpx->new();
+    $gpx->waypoints(\@wpt);
+    my $xml = $gpx->xml('1.0');
+
+    # Parse GPX
+    my $gpx = Geo::Gpx->new( xml => $xml );
+    my $waypoints = $gpx->waypoints();
+    my $tracks = $gpx->tracks();
+
+    # Parse GPX from open file
+    my $gpx = Geo::Gpx->new( input => $fh );
+    my $waypoints = $gpx->waypoints();
+    my $tracks = $gpx->tracks();
+
+=head1 DESCRIPTION
+
+The original goal of this module was to produce GPX/XML files which were
+parseable by both GPX Spinner and EasyGPS. As of version 0.13 it has
+been extended to support general parsing and generation of GPX data. GPX
+1.0 and 1.1 are supported.
+
+=cut
 
 use vars qw ($VERSION);
 $VERSION = '0.25';
@@ -63,6 +104,33 @@ BEGIN {
   }
 }
 
+sub _parse_time {
+  my ( $self, $str ) = @_;
+  my $dt = DateTime::Format::ISO8601->parse_datetime( $str );
+  return $self->{use_datetime} ? $dt : $dt->epoch;
+}
+
+sub _format_time {
+  my ( $self, $tm, $legacy ) = @_;
+  unless ( blessed $tm && $tm->can( 'strftime' ) ) {
+    return $self->_format_time(
+      DateTime->from_epoch(
+        epoch     => $tm,
+        time_zone => 'UTC'
+      ),
+      $legacy
+    );
+  }
+
+  my $ts = $tm->strftime(
+    $legacy
+    ? '%Y-%m-%dT%H:%M:%S.%7N%z'
+    : '%Y-%m-%dT%H:%M:%S%z'
+  );
+  $ts =~ s/(\d{2})$/:$1/;
+  return $ts;
+}
+
 # For backwards compatibility
 sub _init_legacy {
   my $self = shift;
@@ -90,15 +158,15 @@ sub _init_legacy {
       return Geo::Cache->new( @_ );
     },
     time => sub {
-      my $ts = time2str( '%Y-%m-%dT%H:%M:%S.0000000%z', $_[0], 'UTC' );
-      $ts =~ s/(\d{2})$/:$1/;
-      return $ts;
+      return $self->_format_time( $_[0], 1 );
     },
   };
 }
 
 sub _init_shiny_new {
-  my $self = shift;
+  my ( $self, $args ) = @_;
+
+  $self->{use_datetime} = $args->{use_datetime} || 0;
 
   $self->{schema} = [];
 
@@ -107,10 +175,39 @@ sub _init_shiny_new {
       return {@_};
     },
     time => sub {
-      return time2str( '%Y-%m-%dT%H:%M:%SZ', $_[0], 'UTC' );
+      return $self->_format_time( $_[0], 0 );
     },
   };
 }
+
+=head1 INTERFACE
+
+=head2 C<new( { args } )>
+
+The original purpose of C<Geo::Gpx> was to allow an array of
+C<Geo::Cache> objects to be converted into a GPX file. This behaviour is
+maintained by this release:
+
+    use Geo::Gpx;
+    my $gpx = Geo::Gpx->new( @waypoints );
+    my $xml = $gpx->xml;
+
+New applications can use C<Geo::Gpx> to parse a GPX file:
+
+    my $gpx = Geo::Gpx->new( xml => $gpx_document );
+
+or from an open filehandle:
+
+    my $gpx = Geo::Gpx->new( input => $fh );
+
+or can create an empty container to which waypoints, routes and tracks
+can then be added:
+
+
+    my $gpx = Geo::Gpx->new();
+    $gpx->waypoints( \@wpt );
+
+=cut
 
 sub new {
   my ( $class, @args ) = @_;
@@ -121,17 +218,13 @@ sub new {
 
   # Has to handle same calling convention as previous
   # version.
-  if ( ref $args[0] eq 'Geo::Cache' ) {
-
-    # Legacy behaviour
+  if ( blessed $args[0] && $args[0]->isa( 'Geo::Cache' ) ) {
     $self->_init_legacy();
     $self->{waypoints} = \@args;
   }
   elsif ( @args % 2 == 0 ) {
-
-    # New behaviour
     my %args = @args;
-    $self->_init_shiny_new();
+    $self->_init_shiny_new( \%args );
 
     if ( exists $args{input} ) {
       $self->_parse( $args{input} );
@@ -168,7 +261,7 @@ sub _parse {
 
       $p->context( $self );
 
-      my $version = $self->{version} = $attr->{version};
+      my $version = $self->{version} = ( $attr->{version} || '1.0' );
 
       my $parse_deep = sub {
         my ( $elem, $attr ) = @_;
@@ -192,8 +285,8 @@ sub _parse {
         },
         time => sub {
           my ( $elem, $attr, $ctx ) = @_;
-          my $tm = str2time( _trim( $p->text() ) );
-          $ctx->{$elem} = $tm if defined( $tm );
+          my $tm = $self->_parse_time( _trim( $p->text() ) );
+          $ctx->{$elem} = $tm if defined $tm;
         }
       );
 
@@ -285,6 +378,43 @@ sub _parse {
   $p->walk();
 }
 
+=head2 C<add_waypoint( waypoint ... )>
+
+Add one or more waypoints. Each waypoint must be a reference to a
+hash. Each waypoint must include the keys C<lat> and C<lon> and may
+include others:
+
+    my $wpt = {
+        lat           => 54.786989,
+        lon           => -2.344214,
+        ele           => 512,
+        time          => 1164488503,
+        magvar        => 0,
+        geoidheight   => 0,
+        name          => 'My house & home',
+        cmt           => 'Where I live',
+        desc          => '<<Chez moi>>',
+        src           => 'Testing',
+        link          => {
+            href => 'http://hexten.net/',
+            text => 'Hexten',
+            type => 'Blah'
+        },
+        sym           => 'pin',
+        type          => 'unknown',
+        fix           => 'dgps',
+        sat           => 3,
+        hdop          => 10,
+        vdop          => 10,
+        pdop          => 10,
+        ageofdgpsdata => 45,
+        dgpsid        => 247
+    };
+
+    $gpx->add_waypoint( $wpt );
+
+=cut
+
 sub add_waypoint {
   my $self = shift;
 
@@ -304,7 +434,7 @@ sub add_waypoint {
 sub _iterate_points {
   my $pts = shift || [];    # array ref
 
-  unless ( defined( $pts ) ) {
+  unless ( defined $pts ) {
     return sub {
       return;
     };
@@ -325,17 +455,28 @@ sub _iterate_iterators {
     for ( ;; ) {
       return undef unless @its;
       my $next = $its[0]->();
-      return $next if defined( $next );
+      return $next if defined $next;
       shift @its;
     }
    }
 }
 
-# Return an iterator that visits each of the waypoints
+=head2 C<iterate_waypoints()>
+
+Get an iterator that visits all the waypoints in a C<Geo::Gpx>.
+
+=cut
+
 sub iterate_waypoints {
   my $self = shift;
   return _iterate_points( $self->{waypoints} );
 }
+
+=head2 C<iterate_routepoints()>
+
+Get an iterator that visits all the routepoints in a C<Geo::Gpx>.
+
+=cut
 
 sub iterate_routepoints {
   my $self = shift;
@@ -350,6 +491,12 @@ sub iterate_routepoints {
   return _iterate_iterators( @iter );
 
 }
+
+=head2 C<iterate_trackpoints()>
+
+Get an iterator that visits all the trackpoints in a C<Geo::Gpx>.
+
+=cut
 
 sub iterate_trackpoints {
   my $self = shift;
@@ -368,7 +515,17 @@ sub iterate_trackpoints {
   return _iterate_iterators( @iter );
 }
 
-# Return an iterator that visits all points
+=head2 C<iterate_points()>
+
+Get an iterator that visits all the points in a C<Geo::Gpx>. For example
+
+    my $iter = $gpx->iterate_points();
+    while (my $pt = $iter->()) {
+        print "Point: ", join(', ', $pt->{lat}, $pt->{lon}), "\n";
+    }
+
+=cut
+
 sub iterate_points {
   my $self = shift;
 
@@ -379,6 +536,27 @@ sub iterate_points {
   );
 }
 
+=head2 C<bounds( [ $iterator ] )>
+
+Compute the bounding box of all the points in a C<Geo::Gpx> returning
+the result as a hash reference. For example:
+
+    my $gpx = Geo::Gpx->new( xml => $some_xml );
+    my $bounds = $gpx->bounds();
+
+returns a structure like this:
+
+    $bounds = {
+        minlat  => 57.120939,
+        minlon  => -2.9839832,
+        maxlat  => 57.781729,
+        maxlon  => -1.230902
+    };
+
+C<$iterator> defaults to C<$self-E<gt>iterate_points>.
+
+=cut
+
 sub bounds {
   my ( $self, $iter ) = @_;
   $iter ||= $self->iterate_points;
@@ -387,13 +565,13 @@ sub bounds {
 
   while ( my $pt = $iter->() ) {
     $bounds->{minlat} = $pt->{lat}
-     if !defined( $bounds->{minlat} ) || $pt->{lat} < $bounds->{minlat};
+     if !defined $bounds->{minlat} || $pt->{lat} < $bounds->{minlat};
     $bounds->{maxlat} = $pt->{lat}
-     if !defined( $bounds->{maxlat} ) || $pt->{lat} > $bounds->{maxlat};
+     if !defined $bounds->{maxlat} || $pt->{lat} > $bounds->{maxlat};
     $bounds->{minlon} = $pt->{lon}
-     if !defined( $bounds->{minlon} ) || $pt->{lon} < $bounds->{minlon};
+     if !defined $bounds->{minlon} || $pt->{lon} < $bounds->{minlon};
     $bounds->{maxlon} = $pt->{lon}
-     if !defined( $bounds->{maxlon} ) || $pt->{lon} > $bounds->{maxlon};
+     if !defined $bounds->{maxlon} || $pt->{lon} > $bounds->{maxlon};
   }
 
   return $bounds;
@@ -432,8 +610,7 @@ sub _xml {
 
   my $tag = $name_map->{$name} || $name;
 
-  if ( blessed( $value ) && $value->can( 'xml' ) ) {
-
+  if ( blessed $value && $value->can( 'xml' ) ) {
     # Handles legacy Gpx::Cache objects that can
     # render themselves. Note that Gpx::Cache->xml
     # adds the <wpt></wpt> wrapper - so this won't
@@ -484,6 +661,26 @@ sub _cmp_ver {
 
   return @v1 <=> @v2;
 }
+
+=head2 C<xml( [ $version ] )>
+
+Generate GPX XML.
+
+    my $gpx10 = $gpx->xml('1.0');
+    my $gpx11 = $gpx->xml('1.1');
+
+If the version is omitted it defaults to the value of the C<version>
+attibute. Parsing a GPX document sets the version. If the C<version>
+attribute is unset defaults to 1.0.
+
+C<Geo::Gpx> version 0.10 used C<Geo::Cache> to render each of the
+points. C<Geo::Cache> generates a number of hardwired values to suit the
+original application of that module which aren't appropriate for general
+purpose GPX manipulation. Legacy mode is triggered by passing a list of
+C<Geo::Cache> points to the constructor; this should probably be avoided
+for new applications.
+
+=cut
 
 sub xml {
   my $self = shift;
@@ -584,13 +781,27 @@ sub xml {
   return join( '', @ret );
 }
 
-# for JSON:: modules...
+=head2 C<TO_JSON>
+
+For compatability with L<JSON> modules. Converts this object to a hash
+with keys that correspond to the above methods. Generated ala:
+
+
+  my %json = map {$_ => $self->$_}
+    qw(name desc author keywords copyright
+       time link waypoints tracks routes version );
+  $json{bounds} = $self->bounds( $iter );
+
+With one difference: the keys will only be set if they are defined.
+
+=cut
+
 sub TO_JSON {
   my $self = shift;
   my %json;    #= map {$_ => $self->$_} ...
   for my $key ( @META, @ATTR ) {
     my $val = $self->$key;
-    $json{$key} = $val if defined( $val );
+    $json{$key} = $val if defined $val;
   }
   if ( my $bounds = $self->bounds ) {
     $json{bounds} = $self->bounds;
@@ -600,10 +811,22 @@ sub TO_JSON {
 
 #### Legacy methods from 0.10
 
+=head2 C<gpx>
+
+Synonym for C<xml()>. Provided for compatibility with version 0.10.
+
+=cut
+
 sub gpx {
   my $self = shift;
   return $self->xml( @_ );
 }
+
+=head2 C<loc>
+
+Provided for compatibility with version 0.10. 
+
+=cut
 
 sub loc {
   my $self = shift;
@@ -622,6 +845,12 @@ sub loc {
   return join( '', @ret );
 }
 
+=head2 C<gpsdrive>
+
+Provided for compatibility with version 0.10. 
+
+=cut
+
 sub gpsdrive {
   my $self = shift;
   my @ret  = ();
@@ -638,92 +867,7 @@ sub gpsdrive {
 1;
 __END__
 
-=head1 NAME
-
-Geo::Gpx - Create and parse GPX files.
-
-=head1 VERSION
-
-This document describes Geo::Gpx version 0.25
-
-=head1 SYNOPSIS
-
-    # Version 0.10 compatibility
-    use Geo::Gpx;
-    my $gpx = Geo::Gpx->new( @waypoints );
-    my $xml = $gpx->xml;
-
-    # New API, generate GPX
-    my $gpx = Geo::Gpx->new();
-    $gpx->waypoints(\@wpt);
-    my $xml = $gpx->xml('1.0');
-
-    # Parse GPX
-    my $gpx = Geo::Gpx->new( xml => $xml );
-    my $waypoints = $gpx->waypoints();
-    my $tracks = $gpx->tracks();
-
-    # Parse GPX from open file
-    my $gpx = Geo::Gpx->new( input => $fh );
-    my $waypoints = $gpx->waypoints();
-    my $tracks = $gpx->tracks();
-
-=head1 DESCRIPTION
-
-The original goal of this module was to produce GPX/XML files which were
-parseable by both GPX Spinner and EasyGPS. As of version 0.13 it has
-been extended to support general parsing and generation of GPX data. GPX
-1.0 and 1.1 are supported.
-
-=head1 INTERFACE
-
-=over
-
-=item C<new( { args } )>
-
-The original purpose of C<Geo::Gpx> was to allow an array of
-C<Geo::Cache> objects to be converted into a GPX file. This behaviour is
-maintained by this release:
-
-    use Geo::Gpx;
-    my $gpx = Geo::Gpx->new( @waypoints );
-    my $xml = $gpx->xml;
-
-New applications can use C<Geo::Gpx> to parse a GPX file:
-
-    my $gpx = Geo::Gpx->new( xml => $gpx_document );
-
-or from an open filehandle:
-
-    my $gpx = Geo::Gpx->new( input => $fh );
-
-or can create an empty container to which waypoints, routes and tracks
-can then be added:
-
-
-    my $gpx = Geo::Gpx->new();
-    $gpx->waypoints( \@wpt );
-
-=item C<bounds( [ $iterator ] )>
-
-Compute the bounding box of all the points in a C<Geo::Gpx> returning
-the result as a hash reference. For example:
-
-    my $gpx = Geo::Gpx->new( xml => $some_xml );
-    my $bounds = $gpx->bounds();
-
-returns a structure like this:
-
-    $bounds = {
-        minlat  => 57.120939,
-        minlon  => -2.9839832,
-        maxlat  => 57.781729,
-        maxlon  => -1.230902
-    };
-
-C<$iterator> defaults to C<$self-E<gt>iterate_points>.
-
-=item C<name( [ $newname ] )>
+=head2 C<name( [ $newname ] )>
 
 Accessor for the <name> element of a GPX. To get the name:
 
@@ -733,7 +877,7 @@ and to set it:
 
     $gpx->name('My big adventure');
 
-=item C<desc( [ $newdesc ] )>
+=head2 C<desc( [ $newdesc ] )>
 
 Accessor for the <desc> element of a GPX. To get the the description:
 
@@ -743,7 +887,7 @@ and to set it:
 
     $gpx->desc('Got lost, wandered around for ages, got cold, got hungry.');
 
-=item C<author( [ $newauthor ] )>
+=head2 C<author( [ $newauthor ] )>
 
 Accessor for the author structure of a GPX. The author information is stored
 in a hash that reflects the structure of a GPX 1.1 document:
@@ -770,7 +914,7 @@ When setting the author data a similar structure must be supplied:
 The bizarre encoding of email addresses as id and domain is a
 feature of GPX.
 
-=item C<time( [ $newtime ] )>
+=head2 C<time( [ $newtime ] )>
 
 Accessor for the <time> element of a GPX. The time is converted to a
 Unix epoch time when a GPX document is parsed and formatted
@@ -785,7 +929,7 @@ prints
 
     $gpx->time(1164488503);
 
-=item C<keywords( [ $newkeywords ] )>
+=head2 C<keywords( [ $newkeywords ] )>
 
 Access for the <keywords> element of a GPX. Keywords are stored as an
 array reference:
@@ -798,7 +942,7 @@ prints
 
     bleak, cold, scary
 
-=item C<copyright( [ $newcopyright ] )>
+=head2 C<copyright( [ $newcopyright ] )>
 
 Access for the <copyright> element of a GPX.
 
@@ -809,7 +953,7 @@ prints
 
     You Know Who
 
-=item C<link>
+=head2 C<link>
 
 Accessor for the <link> element of a GPX. Links are stored in a hash
 like this:
@@ -823,7 +967,7 @@ For example:
 
     $gpx->link({ href => 'http://google.com/', text => 'Google' });
 
-=item C<waypoints( [ $newwaypoints ] )>
+=head2 C<waypoints( [ $newwaypoints ] )>
 
 Accessor for the waypoints array of a GPX. Each waypoint is a hash
 (which may also be a C<Geo::Cache> instance in legacy mode):
@@ -864,7 +1008,7 @@ an anonymous array of such points:
     $gpx->waypoints([ { lat => 57.0, lon => -2 },
                       { lat => 57.2, lon => -2.1 } ]);
 
-=item C<routes( [ $newroutes ] )>
+=head2 C<routes( [ $newroutes ] )>
 
 Accessor for the routes array. The routes array is an array of hashes
 like this:
@@ -912,7 +1056,7 @@ like this:
 Each of the points in a route may have any of the atttibutes that are
 legal for a waypoint.
 
-=item C<tracks( [ $newtracks ] )>
+=head2 C<tracks( [ $newtracks ] )>
 
 Accessor for the tracks array. The tracks array is an array of hashes
 like this:
@@ -978,7 +1122,7 @@ like this:
         }
     ];
 
-=item C<version( [ $newversion ] )>
+=head2 C<version( [ $newversion ] )>
 
 Accessor for the schema version of a GPX document. Versions 1.0 and 1.1
 are supported.
@@ -988,107 +1132,6 @@ are supported.
 prints
 
     1.0
-
-=item C<add_waypoint( waypoint ... )>
-
-Add one or more waypoints. Each waypoint must be a reference to a
-hash. Each waypoint must include the keys C<lat> and C<lon> and may
-include others:
-
-    my $wpt = {
-        lat           => 54.786989,
-        lon           => -2.344214,
-        ele           => 512,
-        time          => 1164488503,
-        magvar        => 0,
-        geoidheight   => 0,
-        name          => 'My house & home',
-        cmt           => 'Where I live',
-        desc          => '<<Chez moi>>',
-        src           => 'Testing',
-        link          => {
-            href => 'http://hexten.net/',
-            text => 'Hexten',
-            type => 'Blah'
-        },
-        sym           => 'pin',
-        type          => 'unknown',
-        fix           => 'dgps',
-        sat           => 3,
-        hdop          => 10,
-        vdop          => 10,
-        pdop          => 10,
-        ageofdgpsdata => 45,
-        dgpsid        => 247
-    };
-
-    $gpx->add_waypoint( $wpt );
-
-=item C<iterate_points()>
-
-Get an iterator that visits all the points in a C<Geo::Gpx>. For example
-
-    my $iter = $gpx->iterate_points();
-    while (my $pt = $iter->()) {
-        print "Point: ", join(', ', $pt->{lat}, $pt->{lon}), "\n";
-    }
-
-=item C<iterate_waypoints()>
-
-Get an iterator that visits all the waypoints in a C<Geo::Gpx>.
-
-=item C<iterate_routepoints()>
-
-Get an iterator that visits all the routepoints in a C<Geo::Gpx>.
-
-=item C<iterate_trackpoints()>
-
-Get an iterator that visits all the trackpoints in a C<Geo::Gpx>.
-
-=item C<xml( [ $version ] )>
-
-Generate GPX XML.
-
-    my $gpx10 = $gpx->xml('1.0');
-    my $gpx11 = $gpx->xml('1.1');
-
-If the version is omitted it defaults to the value of the C<version>
-attibute. Parsing a GPX document sets the version. If the C<version>
-attribute is unset defaults to 1.0.
-
-C<Geo::Gpx> version 0.10 used C<Geo::Cache> to render each of the
-points. C<Geo::Cache> generates a number of hardwired values to suit the
-original application of that module which aren't appropriate for general
-purpose GPX manipulation. Legacy mode is triggered by passing a list of
-C<Geo::Cache> points to the constructor; this should probably be avoided
-for new applications.
-
-=item C<TO_JSON>
-
-For compatability with L<JSON> modules. Converts this object to a hash
-with keys that correspond to the above methods. Generated ala:
-
-
-  my %json = map {$_ => $self->$_}
-    qw(name desc author keywords copyright
-       time link waypoints tracks routes version );
-  $json{bounds} = $self->bounds( $iter );
-
-With one difference: the keys will only be set if they are defined.
-
-=item C<gpx>
-
-Synonym for C<xml()>. Provided for compatibility with version 0.10.
-
-=item C<loc>
-
-Provided for compatibility with version 0.10. 
-
-=item C<gpsdrive>
-
-Provided for compatibility with version 0.10. 
-
-=back
 
 =head1 DIAGNOSTICS
 
