@@ -21,7 +21,7 @@ WriteMakefile(
     'HTML::Entities' => 0,
     'Scalar::Util'   => 0,
     'Time::Local'    => 0,
-    'XML::Descent'   => 0,
+    'XML::Descent'   => '1.01',
   },
   dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
   clean => { FILES    => 'Geo-Gpx-*' },

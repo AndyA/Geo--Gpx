@@ -57,7 +57,6 @@ BEGIN {
     no strict 'refs';
     *{ __PACKAGE__ . '::' . $attr } = sub {
       my $self = shift;
-      # warn "get $name\n";
       $self->{$attr} = shift if @_;
       return $self->{$attr};
     };
@@ -190,10 +189,7 @@ sub _parse {
         '*' => sub {
           my ( $elem, $attr, $ctx ) = @_;
           $ctx->{$elem} = _trim( $p->text() );
-        }
-      );
-
-      $p->on(
+        },
         time => sub {
           my ( $elem, $attr, $ctx ) = @_;
           my $tm = str2time( _trim( $p->text() ) );
@@ -207,9 +203,7 @@ sub _parse {
         $p->on(
           metadata => sub {
             $p->walk();
-          }
-        );
-        $p->on(
+          },
           [ 'link', 'email', 'author' ] => sub {
             my ( $elem, $attr, $ctx ) = @_;
             $ctx->{$elem} = $parse_deep->( $elem, $attr );
@@ -223,21 +217,15 @@ sub _parse {
           url => sub {
             my ( $elem, $attr, $ctx ) = @_;
             $ctx->{link}->{href} = _trim( $p->text() );
-          }
-        );
-        $p->on(
+          },
           urlname => sub {
             my ( $elem, $attr, $ctx ) = @_;
             $ctx->{link}->{text} = _trim( $p->text() );
-          }
-        );
-        $p->on(
+          },
           author => sub {
             my ( $elem, $attr, $ctx ) = @_;
             $ctx->{author}->{name} = _trim( $p->text() );
-          }
-        );
-        $p->on(
+          },
           email => sub {
             my ( $elem, $attr, $ctx ) = @_;
             my $em = _trim( $p->text() );
@@ -255,43 +243,25 @@ sub _parse {
         bounds => sub {
           my ( $elem, $attr, $ctx ) = @_;
           $ctx->{$elem} = $parse_deep->( $elem, $attr );
-        }
-      );
-
-      $p->on(
+        },
         keywords => sub {
           my ( $elem, $attr ) = @_;
           $self->{keywords}
            = [ map { _trim( $_ ) } split( /,/, $p->text() ) ];
-        }
-      );
-
-      # Parse a waypoint
-      $p->on(
+        },
         wpt => sub {
           my ( $elem, $attr ) = @_;
           push @{ $self->{waypoints} }, $parse_point->( $elem, $attr );
-        }
-      );
-
-      $p->on(
+        },
         [ 'trkpt', 'rtept' ] => sub {
           my ( $elem, $attr, $ctx ) = @_;
           push @{ $ctx->{points} }, $parse_point->( $elem, $attr );
-        }
-      );
-
-      # Parse a route
-      $p->on(
+        },
         rte => sub {
           my ( $elem, $attr ) = @_;
           my $rt = $parse_deep->( $elem, $attr );
           push @{ $self->{routes} }, $rt;
-        }
-      );
-
-      # Parse a track
-      $p->on(
+        },
         trk => sub {
           my ( $elem, $attr ) = @_;
           my $tk = {};
@@ -711,8 +681,9 @@ been extended to support general parsing and generation of GPX data. GPX
 
 =item C<new( { args } )>
 
-The original purpose of C<Geo::Gpx> was to allow an array of C<Geo::Cache> objects to be
-converted into a GPX file. This behaviour is maintained by this release:
+The original purpose of C<Geo::Gpx> was to allow an array of
+C<Geo::Cache> objects to be converted into a GPX file. This behaviour is
+maintained by this release:
 
     use Geo::Gpx;
     my $gpx = Geo::Gpx->new( @waypoints );
@@ -726,15 +697,17 @@ or from an open filehandle:
 
     my $gpx = Geo::Gpx->new( input => $fh );
 
-or can create an empty container to which waypoints, routes and tracks can then be added:
+or can create an empty container to which waypoints, routes and tracks
+can then be added:
+
 
     my $gpx = Geo::Gpx->new();
     $gpx->waypoints( \@wpt );
 
 =item C<bounds( [ $iterator ] )>
 
-Compute the bounding box of all the points in a C<Geo::Gpx> returning the result as a hash
-reference. For example:
+Compute the bounding box of all the points in a C<Geo::Gpx> returning
+the result as a hash reference. For example:
 
     my $gpx = Geo::Gpx->new( xml => $some_xml );
     my $bounds = $gpx->bounds();
@@ -794,12 +767,15 @@ When setting the author data a similar structure must be supplied:
         name => 'Me!'
     });
 
-The bizarre encoding of email addresses as id and domain is a feature of GPX.
+The bizarre encoding of email addresses as id and domain is a
+feature of GPX.
 
 =item C<time( [ $newtime ] )>
 
-Accessor for the <time> element of a GPX. The time is converted to a Unix epoch
-time when a GPX document is parsed and formatted appropriately when a GPX is generated
+Accessor for the <time> element of a GPX. The time is converted to a
+Unix epoch time when a GPX document is parsed and formatted
+appropriately when a GPX is generated
+
 
     print $gpx->time();
 
@@ -811,7 +787,8 @@ prints
 
 =item C<keywords( [ $newkeywords ] )>
 
-Access for the <keywords> element of a GPX. Keywords are stored as an array reference:
+Access for the <keywords> element of a GPX. Keywords are stored as an
+array reference:
 
     $gpx->keywords(['bleak', 'cold', 'scary']);
     my $k = $gpx->keywords();
@@ -834,7 +811,8 @@ prints
 
 =item C<link>
 
-Accessor for the <link> element of a GPX. Links are stored in a hash like this:
+Accessor for the <link> element of a GPX. Links are stored in a hash
+like this:
 
     $link = {
         'text' => 'Hexten',
@@ -847,8 +825,9 @@ For example:
 
 =item C<waypoints( [ $newwaypoints ] )>
 
-Accessor for the waypoints array of a GPX. Each waypoint is a hash (which
-may also be a C<Geo::Cache> instance in legacy mode):
+Accessor for the waypoints array of a GPX. Each waypoint is a hash
+(which may also be a C<Geo::Cache> instance in legacy mode):
+
 
     my $wpt = {
         # All standard GPX fields
@@ -879,14 +858,16 @@ may also be a C<Geo::Cache> instance in legacy mode):
     };
 
 All fields apart from C<lat> and C<lon> are optional. See the GPX
-specification for an explanation of the fields. The waypoints array
-is an anonymous array of such points:
+specification for an explanation of the fields. The waypoints array is
+an anonymous array of such points:
 
-    $gpx->waypoints([ { lat => 57.0, lon => -2 }, { lat => 57.2, lon => -2.1 } ]);
+    $gpx->waypoints([ { lat => 57.0, lon => -2 },
+                      { lat => 57.2, lon => -2.1 } ]);
 
 =item C<routes( [ $newroutes ] )>
 
-Accessor for the routes array. The routes array is an array of hashes like this:
+Accessor for the routes array. The routes array is an array of hashes
+like this:
 
     my $routes = [
         {
@@ -928,11 +909,13 @@ Accessor for the routes array. The routes array is an array of hashes like this:
 
     $gpx->routes($routes);
 
-Each of the points in a route may have any of the atttibutes that are legal for a waypoint.
+Each of the points in a route may have any of the atttibutes that are
+legal for a waypoint.
 
 =item C<tracks( [ $newtracks ] )>
 
-Accessor for the tracks array. The tracks array is an array of hashes like this:
+Accessor for the tracks array. The tracks array is an array of hashes
+like this:
 
     my $tracks = [
         {
@@ -997,7 +980,8 @@ Accessor for the tracks array. The tracks array is an array of hashes like this:
 
 =item C<version( [ $newversion ] )>
 
-Accessor for the schema version of a GPX document. Versions 1.0 and 1.1 are supported.
+Accessor for the schema version of a GPX document. Versions 1.0 and 1.1
+are supported.
 
     print $gpx->version();
 
@@ -1081,8 +1065,9 @@ for new applications.
 
 =item C<TO_JSON>
 
-For compatability with L<JSON> modules.  Converts this object to a hash with
-keys that correspond to the above methods.  Generated ala:
+For compatability with L<JSON> modules. Converts this object to a hash
+with keys that correspond to the above methods. Generated ala:
+
 
   my %json = map {$_ => $self->$_}
     qw(name desc author keywords copyright
@@ -1155,7 +1140,8 @@ This version by Andy Armstrong  C<< <andy@hexten.net> >>.
 
 =head1 LICENCE AND COPYRIGHT
 
-Copyright (c) 2007, Andy Armstrong C<< <andy@hexten.net> >>. All rights reserved.
+Copyright (c) 2007-2009, Andy Armstrong C<< <andy@hexten.net> >>. All
+rights reserved.
 
 This module is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself. See L<perlartistic>.
@@ -1175,12 +1161,12 @@ NECESSARY SERVICING, REPAIR, OR CORRECTION.
 IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING
 WILL ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR
 REDISTRIBUTE THE SOFTWARE AS PERMITTED BY THE ABOVE LICENCE, BE
-LIABLE TO YOU FOR DAMAGES, INCLUDING ANY GENERAL, SPECIAL, INCIDENTAL,
-OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE USE OR INABILITY TO USE
-THE SOFTWARE (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR DATA BEING
-RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES OR A
-FAILURE OF THE SOFTWARE TO OPERATE WITH ANY OTHER SOFTWARE), EVEN IF
-SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF
-SUCH DAMAGES.
+LIABLE TO YOU FOR DAMAGES, INCLUDING ANY GENERAL, SPECIAL,
+INCIDENTAL, OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE USE OR
+INABILITY TO USE THE SOFTWARE (INCLUDING BUT NOT LIMITED TO LOSS OF
+DATA OR DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR
+THIRD PARTIES OR A FAILURE OF THE SOFTWARE TO OPERATE WITH ANY OTHER
+SOFTWARE), EVEN IF SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGES.
 
 =cut

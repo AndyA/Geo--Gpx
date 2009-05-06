@@ -20,7 +20,7 @@ my $builder = MyBuilder->new(
     'HTML::Entities' => 0,
     'Scalar::Util'   => 0,
     'Time::Local'    => 0,
-    'XML::Descent'   => 0,
+    'XML::Descent'   => '1.01',
   },
   add_to_cleanup => ['Geo-Gpx-*'],
 );
