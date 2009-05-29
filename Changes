@@ -46,3 +46,6 @@ Revision history for Geo-Gpx
 
 0.25    2009-05-05
         Implement time zone support. Refs #28532.
+
+0.26    2009-05-26
+        Move to GitHub
