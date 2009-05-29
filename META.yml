@@ -1,6 +1,7 @@
 ---
 name: Geo-Gpx
-version: 0.26
+version: 0.27
+
 author:
   - 'Andy Armstrong <andy@hexten.net>'
 abstract: Create and parse GPX files.

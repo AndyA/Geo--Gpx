@@ -17,7 +17,7 @@ Geo::Gpx - Create and parse GPX files.
 
 =head1 VERSION
 
-This document describes Geo::Gpx version 0.26
+This document describes Geo::Gpx version 0.27
 
 =head1 SYNOPSIS
 
@@ -51,7 +51,7 @@ been extended to support general parsing and generation of GPX data. GPX
 =cut
 
 use vars qw ($VERSION);
-$VERSION = '0.26';
+$VERSION = '0.27';
 
 # Values that are encoded as attributes
 my %AS_ATTR = (
