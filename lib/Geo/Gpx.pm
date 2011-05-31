@@ -89,7 +89,7 @@ my @META;
 my @ATTR;
 
 BEGIN {
-  @META = qw( name desc author time keywords copyright link );
+  @META = qw( name desc author copyright link time keywords );
   @ATTR = qw( waypoints tracks routes version );
 
   # Generate accessors
