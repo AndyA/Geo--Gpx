@@ -10,6 +10,7 @@ use HTML::Entities qw( encode_entities encode_entities_numeric );
 use Scalar::Util qw( blessed );
 use Time::Local;
 use XML::Descent;
+use Encode;
 
 =head1 NAME
 
@@ -422,6 +423,8 @@ include others:
 
   $gpx->add_waypoint( $wpt );
 
+Text values are expected to be UTF-8 encoded.
+
 Time values may either be an epoch offset or a L<DateTime>. If you wish
 to specify the timezone use a L<DateTime>.
 
@@ -590,7 +593,9 @@ sub bounds {
 }
 
 sub _enc {
-  return encode_entities_numeric( $_[0] );
+  # Decode UTF-8 input into Perl's internal UTF-8 representation
+  # and return encoded entity for inclusion in XML output.
+  return encode_entities_numeric( decode( 'utf8', $_[0] ) );
 }
 
 sub _tag {
