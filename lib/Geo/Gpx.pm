@@ -44,7 +44,7 @@ This document describes Geo::Gpx version 0.27
 =head1 DESCRIPTION
 
 The original goal of this module was to produce GPX/XML files which were
-parseable by both GPX Spinner and EasyGPS. As of version 0.13 it has
+parsable by both GPX Spinner and EasyGPS. As of version 0.13 it has
 been extended to support general parsing and generation of GPX data. GPX
 1.0 and 1.1 are supported.
 
@@ -682,7 +682,7 @@ Generate GPX XML.
   my $gpx11 = $gpx->xml( '1.1' );
 
 If the version is omitted it defaults to the value of the C<version>
-attibute. Parsing a GPX document sets the version. If the C<version>
+attribute. Parsing a GPX document sets the version. If the C<version>
 attribute is unset defaults to 1.0.
 
 C<Geo::Gpx> version 0.10 used L<Geo::Cache> to render each of the
@@ -795,7 +795,7 @@ sub xml {
 
 =head2 C<TO_JSON>
 
-For compatability with L<JSON> modules. Converts this object to a hash
+For compatibility with L<JSON> modules. Converts this object to a hash
 with keys that correspond to the above methods. Generated ala:
 
   my %json = map { $_ => $self->$_ }
@@ -1058,7 +1058,7 @@ like this:
 
   $gpx->routes($routes);
 
-Each of the points in a route may have any of the atttibutes that are
+Each of the points in a route may have any of the attributes that are
 legal for a waypoint.
 
 =head2 C<tracks( [ $newtracks ] )>
