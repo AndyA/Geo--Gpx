@@ -1,4 +1,4 @@
-Revision history for Geo-Gpx
+Revision history for Perl module Geo::Gpx
 
 0.13    2006-11-26
         Implement complete support for parsing and generating GPX 1.0
