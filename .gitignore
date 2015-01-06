@@ -23,3 +23,4 @@ _build/
 cover_db/
 inc/
 nytprof.out
+*.bak
