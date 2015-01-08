@@ -1,42 +1,58 @@
+use 5.008;
 use strict;
 use warnings;
-use ExtUtils::MakeMaker;
 
-eval 'use ExtUtils::MakeMaker::Coverage';
-warn "Optional ExtUtils::MakeMaker::Coverage not available\n" if $@;
+use File::Spec::Functions qw(catfile);
 
-my $github    = 'https://github.com/briandfoy/';
-my $main_file = 'lib/';
+my $module    = 'Geo::Gpx';
+my $github    = 'https://github.com/briandfoy/Geo--Gpx';
+my $main_file = catfile( 'lib', split /::/, "$module.pm" );
 
 my %WriteMakefile = (
-  ( MM->can( 'signature_target' ) ? ( SIGN => 1 ) : () ),
-  license( 'perl' ),
-  NAME          => 'Geo::Gpx',
-  AUTHOR        => 'Andy Armstrong <andy@hexten.net>',
-  VERSION_FROM  => 'lib/Geo/Gpx.pm',
-  ABSTRACT_FROM => 'lib/Geo/Gpx.pm',
-  PL_FILES      => {},
-  PREREQ_PM     => {
-    'DateTime'                  => 0,
-    'DateTime::Format::ISO8601' => 0,
-    'HTML::Entities'            => 0,
-    'Scalar::Util'              => 0,
-    'Test::More'                => 0,
-    'Time::Local'               => 0,
-    'XML::Descent'              => '1.01',
-    'version'                   => 0,
-  },
-  dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
-  clean => { FILES    => 'Geo-Gpx-*' },
-);
+	NAME          => $module,
+	VERSION_FROM  => $main_file,
+	ABSTRACT_FROM => $main_file,
+	LICENSE       => 'perl',
+	AUTHOR        => 'Andy Armstrong <andy@hexten.net>',
 
-sub license {
-  my $lic = shift;
-  local $^W = 0;    # Silence warning about non-numeric version
-  return
-   unless $ExtUtils::MakeMaker::VERSION >= '6.31';
-  return ( LICENSE => $lic );
-}
+	'CONFIGURE_REQUIRES' => {
+		'ExtUtils::MakeMaker' => '6.64',
+		},
+
+	'BUILD_REQUIRES' => {
+		},
+
+	'TEST_REQUIRES' => {
+		'Test::More' => '0.94',
+		},
+
+	'PREREQ_PM'     => {
+		'DateTime'                  => 0,
+		'DateTime::Format::ISO8601' => 0,
+		'HTML::Entities'            => 0,
+		'Scalar::Util'              => 0,
+		'Time::Local'               => 0,
+		'XML::Descent'              => '1.01',
+		'version'                   => 0,
+		},
+
+	'META_MERGE' => {
+		'meta-spec' => { version => 2 },
+		resources => {
+			repository => {
+				type => 'git',
+				url  => "$github.git",
+				web  => $github,
+				},
+			bugtraker => {
+				web    => "$github/issues",
+				},
+			homepage => $github,
+			},
+		},
+
+	clean => { FILES    => 'Geo-Gpx-*' },
+	);
 
 
 sub arguments { \%WriteMakefile }
@@ -50,6 +66,7 @@ sub do_it {
 			//
 		"$MM 6.64";
 	eval "use $MM_version" || die "Could not load $MM_version: $@";
+	eval 'use ExtUtils::MakeMaker::Coverage';
 	eval "use Test::Manifest 1.21" 
 		if -e File::Spec->catfile( qw(t test_manifest) );
 	WriteMakefile( %WriteMakefile );
