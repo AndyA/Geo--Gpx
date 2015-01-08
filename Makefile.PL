@@ -1,22 +1,25 @@
 use 5.008;
+
+package Geo::Gpx;
 use strict;
 use warnings;
 
 use File::Spec::Functions qw(catfile);
 
-my $module    = 'Geo::Gpx';
+my $module    = __PACKAGE__;
 my $github    = 'https://github.com/briandfoy/Geo--Gpx';
 my $main_file = catfile( 'lib', split /::/, "$module.pm" );
 
 my %WriteMakefile = (
-	NAME          => $module,
-	VERSION_FROM  => $main_file,
-	ABSTRACT_FROM => $main_file,
-	LICENSE       => 'perl',
-	AUTHOR        => 'Andy Armstrong <andy@hexten.net>',
+	'NAME'          => $module,
+	'VERSION_FROM'  => $main_file,
+	'ABSTRACT_FROM' => $main_file,
+	'LICENSE'       => 'perl',
+	'AUTHOR'        => 'Andy Armstrong <andy@hexten.net>',
 
 	'CONFIGURE_REQUIRES' => {
-		'ExtUtils::MakeMaker' => '6.64',
+		'ExtUtils::MakeMaker'   => '6.64',
+		'File::Spec::Functions' => '0',
 		},
 
 	'BUILD_REQUIRES' => {
