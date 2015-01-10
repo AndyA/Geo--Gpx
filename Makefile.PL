@@ -54,7 +54,7 @@ my %WriteMakefile = (
 			},
 		},
 
-	clean => { FILES    => 'Geo-Gpx-*' },
+	clean => { FILES => "$dist-*" },
 	);
 
 
