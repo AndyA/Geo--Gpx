@@ -5,6 +5,8 @@ use warnings;
 use File::Spec::Functions qw(catfile);
 
 my $module    = 'Geo::Gpx';
+( my $dist = $module ) =~ s/::/-/g;
+
 my $github    = 'https://github.com/briandfoy/Geo--Gpx';
 my $main_file = catfile( 'lib', split /::/, "$module.pm" );
 
