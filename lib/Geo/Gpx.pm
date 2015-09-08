@@ -11,6 +11,8 @@ use Scalar::Util qw( blessed );
 use Time::Local;
 use XML::Descent;
 
+=encoding utf8
+
 =head1 NAME
 
 Geo::Gpx - Create and parse GPX files.
@@ -835,7 +837,7 @@ sub gpx {
 
 =head2 C<loc>
 
-Provided for compatibility with version 0.10. 
+Provided for compatibility with version 0.10.
 
 =cut
 
@@ -858,7 +860,7 @@ sub loc {
 
 =head2 C<gpsdrive>
 
-Provided for compatibility with version 0.10. 
+Provided for compatibility with version 0.10.
 
 =cut
 
